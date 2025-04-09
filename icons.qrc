@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/logo">
+        <file>icons/郁金香.png</file>
+        <file>icons/设置.png</file>
+        <file>icons/火箭.png</file>
+        <file>icons/骷髅.png</file>
+    </qresource>
+</RCC>

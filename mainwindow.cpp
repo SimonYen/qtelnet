@@ -5,7 +5,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_socketType(SocketType::TCP_CLIENT)
+    , m_mode(NetworkHandler::Mode::TCP_CLIENT)
 {
     ui->setupUi(this);
     //设置输入限制
@@ -20,9 +20,9 @@ MainWindow::~MainWindow()
 void MainWindow::on_socketTypeCombox_currentIndexChanged(int index)
 {
     //切换成员变量
-    m_socketType = static_cast<SocketType>(index);
+    m_mode = static_cast<NetworkHandler::Mode>(index);
     //输出出来
-    ui->statusbar->showMessage("工具切换到：" + SocketTypeToString(index));
+    ui->statusbar->showMessage("工具切换到：" + NetworkHandler::mode2String(index));
 }
 
 void MainWindow::settingInputValidation()

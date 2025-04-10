@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QHostAddress>
 #include <QMainWindow>
 #include <QPair>
 #include "net/networkhandler.h"
@@ -29,7 +30,9 @@ private:
     //当前所处的模式（工具所选择的套接字类型）
     NetworkHandler::Mode m_mode;
     //IP地址
-    QPair<QString, int> m_address;
+    QPair<QHostAddress, int> m_address;
+    //网络句柄
+    NetworkHandler *m_handler;
 
 private:
     //设置输入验证

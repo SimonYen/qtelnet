@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1063</width>
+    <height>659</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -324,11 +324,223 @@
          </layout>
         </widget>
         <widget class="QWidget" name="tab_4">
+         <attribute name="icon">
+          <iconset resource="icons.qrc">
+           <normaloff>:/logo/icons/闪电.png</normaloff>:/logo/icons/闪电.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>TCP Client/UDP</string>
          </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_11">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_7" rowstretch="5,1">
+            <item row="0" column="0">
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string>消息历史</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <layout class="QGridLayout" name="gridLayout_4" rowstretch="5,1">
+                 <item row="1" column="0">
+                  <widget class="QFrame" name="frame_4">
+                   <property name="frameShape">
+                    <enum>QFrame::Shape::StyledPanel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Shadow::Raised</enum>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_10">
+                    <item>
+                     <widget class="QPushButton" name="clientDisplayButton">
+                      <property name="text">
+                       <string>暂停显示</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/logo/icons/ufo.png</normaloff>:/logo/icons/ufo.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clientSaveMessageButton">
+                      <property name="text">
+                       <string>保存消息</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/logo/icons/文件袋.png</normaloff>:/logo/icons/文件袋.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QPushButton" name="clientClearMessageButton">
+                      <property name="text">
+                       <string>清空消息</string>
+                      </property>
+                      <property name="icon">
+                       <iconset resource="icons.qrc">
+                        <normaloff>:/logo/icons/垃圾桶.png</normaloff>:/logo/icons/垃圾桶.png</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QTabWidget" name="clientTabWidget">
+                   <property name="currentIndex">
+                    <number>2</number>
+                   </property>
+                   <widget class="QWidget" name="tab_3">
+                    <attribute name="title">
+                     <string>UTF-8</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_5">
+                     <item>
+                      <widget class="QTextBrowser" name="clientUTFTextBrowser"/>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="tab_6">
+                    <attribute name="title">
+                     <string>ASCII</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_7">
+                     <item>
+                      <widget class="QTextBrowser" name="clientASCIITextBrowser"/>
+                     </item>
+                    </layout>
+                   </widget>
+                   <widget class="QWidget" name="tab_5">
+                    <attribute name="title">
+                     <string>HEX</string>
+                    </attribute>
+                    <layout class="QVBoxLayout" name="verticalLayout_8">
+                     <item>
+                      <widget class="QTextBrowser" name="clientHEXTextBrowser"/>
+                     </item>
+                    </layout>
+                   </widget>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QGroupBox" name="groupBox_4">
+              <property name="title">
+               <string>消息发送</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_13">
+               <item>
+                <layout class="QGridLayout" name="gridLayout_6" columnstretch="6,1">
+                 <item row="0" column="0">
+                  <widget class="QPlainTextEdit" name="clientMessageTextEdit"/>
+                 </item>
+                 <item row="0" column="1">
+                  <layout class="QGridLayout" name="gridLayout_5" rowstretch="1,1">
+                   <item row="0" column="0">
+                    <widget class="QPushButton" name="clientSendMessageButton">
+                     <property name="text">
+                      <string>发送消息</string>
+                     </property>
+                     <property name="icon">
+                      <iconset resource="icons.qrc">
+                       <normaloff>:/logo/icons/纸飞机.png</normaloff>:/logo/icons/纸飞机.png</iconset>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QFrame" name="frame_5">
+                     <property name="frameShape">
+                      <enum>QFrame::Shape::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Shadow::Raised</enum>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_10">
+                      <item>
+                       <widget class="QCheckBox" name="checkBox_9">
+                        <property name="text">
+                         <string>HEX进制发送</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <layout class="QHBoxLayout" name="horizontalLayout_11">
+                        <item>
+                         <widget class="QCheckBox" name="checkBox_7">
+                          <property name="text">
+                           <string>周期发送</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QLineEdit" name="lineEdit_2"/>
+                        </item>
+                        <item>
+                         <widget class="QLabel" name="label_6">
+                          <property name="text">
+                           <string>ms</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QHBoxLayout" name="horizontalLayout_12">
+                        <item>
+                         <widget class="QCheckBox" name="checkBox_8">
+                          <property name="text">
+                           <string>定时发送</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item>
+                         <widget class="QDateTimeEdit" name="dateTimeEdit">
+                          <property name="dateTime">
+                           <datetime>
+                            <hour>0</hour>
+                            <minute>0</minute>
+                            <second>0</second>
+                            <year>1998</year>
+                            <month>8</month>
+                            <day>21</day>
+                           </datetime>
+                          </property>
+                          <property name="date">
+                           <date>
+                            <year>1998</year>
+                            <month>8</month>
+                            <day>21</day>
+                           </date>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
         <widget class="QWidget" name="tab_2">
+         <attribute name="icon">
+          <iconset resource="icons.qrc">
+           <normaloff>:/logo/icons/旗子.png</normaloff>:/logo/icons/旗子.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>TCP Server</string>
          </attribute>
@@ -495,7 +707,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1063</width>
      <height>20</height>
     </rect>
    </property>

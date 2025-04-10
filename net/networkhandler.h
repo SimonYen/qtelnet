@@ -49,6 +49,9 @@ public:
     //查询模式
     virtual Mode mode() const = 0;
 
+protected:
+    QPair<QHostAddress, quint16> m_address;
+
     //信号
 signals:
     //连接成功信号

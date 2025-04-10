@@ -4,5 +4,11 @@
         <file>icons/设置.png</file>
         <file>icons/火箭.png</file>
         <file>icons/骷髅.png</file>
+        <file>icons/旗子.png</file>
+        <file>icons/闪电.png</file>
+        <file>icons/ufo.png</file>
+        <file>icons/垃圾桶.png</file>
+        <file>icons/文件袋.png</file>
+        <file>icons/纸飞机.png</file>
     </qresource>
 </RCC>

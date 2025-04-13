@@ -48,5 +48,8 @@ private slots:
     void onClientDataReceived(const QByteArray &data);
     //发生错误时
     void onSocketErrorOccurred(const QString &error);
+    void on_clientDisplayButton_clicked();
+    void on_clientClearMessageButton_clicked();
+    void on_clientSaveMessageButton_clicked();
 };
 #endif // MAINWINDOW_H

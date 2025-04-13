@@ -31,15 +31,15 @@ QString FileLogger::messageTypeToString(QtMsgType type)
 {
     switch (type) {
     case QtDebugMsg:
-        return "DEBUG";
+        return "DEBU";
     case QtInfoMsg:
         return "INFO";
     case QtWarningMsg:
-        return "WARNING";
+        return "WARN";
     case QtCriticalMsg:
-        return "CRITICAL";
+        return "CRIT";
     case QtFatalMsg:
-        return "FATAL";
+        return "FATA";
     }
     return "UNKNOWN";
 }

@@ -352,6 +352,19 @@
                    </property>
                    <layout class="QHBoxLayout" name="horizontalLayout_10">
                     <item>
+                     <spacer name="horizontalSpacer_11">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
                      <widget class="QPushButton" name="clientDisplayButton">
                       <property name="text">
                        <string>暂停显示</string>
@@ -361,6 +374,19 @@
                         <normaloff>:/logo/icons/ufo.png</normaloff>:/logo/icons/ufo.png</iconset>
                       </property>
                      </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer_13">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
                     </item>
                     <item>
                      <widget class="QPushButton" name="clientSaveMessageButton">
@@ -374,6 +400,19 @@
                      </widget>
                     </item>
                     <item>
+                     <spacer name="horizontalSpacer_14">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                    <item>
                      <widget class="QPushButton" name="clientClearMessageButton">
                       <property name="text">
                        <string>清空消息</string>
@@ -384,13 +423,26 @@
                       </property>
                      </widget>
                     </item>
+                    <item>
+                     <spacer name="horizontalSpacer_12">
+                      <property name="orientation">
+                       <enum>Qt::Orientation::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
                    </layout>
                   </widget>
                  </item>
                  <item row="0" column="0">
                   <widget class="QTabWidget" name="clientTabWidget">
                    <property name="currentIndex">
-                    <number>2</number>
+                    <number>0</number>
                    </property>
                    <widget class="QWidget" name="tab_3">
                     <attribute name="title">
@@ -444,12 +496,24 @@
                   <layout class="QGridLayout" name="gridLayout_5" rowstretch="1,1">
                    <item row="0" column="0">
                     <widget class="QPushButton" name="clientSendMessageButton">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="text">
                       <string>发送消息</string>
                      </property>
                      <property name="icon">
                       <iconset resource="icons.qrc">
                        <normaloff>:/logo/icons/纸飞机.png</normaloff>:/logo/icons/纸飞机.png</iconset>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>

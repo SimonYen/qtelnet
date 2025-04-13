@@ -4,6 +4,7 @@
 #include <QRegularExpressionValidator>
 #include "./ui_mainwindow.h"
 #include "net/networkfactory.h"
+#include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -45,6 +46,48 @@ void MainWindow::settingInputValidation()
     QRegularExpressionValidator *portValidator = new QRegularExpressionValidator(portRegExp, this);
     ui->portLineEdit->setValidator(portValidator);
 }
+
+void MainWindow::connectingNetworkSignalsAndSlots()
+{
+    //判断当前模式
+    switch (m_mode) {
+    case NetworkHandler::Mode::UDP:
+    case NetworkHandler::Mode::TCP_CLIENT: {
+        //连接到客户端的槽
+        connect(m_handler, &NetworkHandler::dataReceived, this, &MainWindow::onClientDataReceived);
+        break;
+    }
+    //服务器模式日后实现
+    case NetworkHandler::Mode::TCP_SERVER:
+        break;
+    default:
+        break;
+    }
+    //三个模式错误处理都是一样的
+    connect(m_handler, &NetworkHandler::errorOccurred, this, &MainWindow::onSocketErrorOccurred);
+}
+
+void MainWindow::onClientDataReceived(const QByteArray &data)
+{
+    //数据转换
+    auto UTFString = ByteArrayUtils::toUtf8String(data);
+    auto ASCIIString = ByteArrayUtils::toAsciiString(data);
+    auto HEXString = ByteArrayUtils::toHexString(data, true, true);
+
+    //显示出来
+    MessageBuilderUtils mb("远程", m_handler->peerAddress(), m_handler->peerPort());
+    ui->clientASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "green"));
+    ui->clientHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
+    ui->clientUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
+
+    //数据包统计
+}
+
+void MainWindow::onSocketErrorOccurred(const QString &error)
+{
+    //直接状态栏显示
+    ui->statusbar->showMessage("错误发生：" + error);
+}
 //开始连接
 void MainWindow::on_startConnectButton_clicked()
 {
@@ -70,11 +113,19 @@ void MainWindow::on_startConnectButton_clicked()
         return;
     }
     //连接网络信号和槽
+    connectingNetworkSignalsAndSlots();
 
     //更改按钮属性
     ui->startConnectButton->setText("连接中");
     ui->startConnectButton->setEnabled(false);
     ui->closeConnectButton->setEnabled(true);
+    ui->clientSendMessageButton->setEnabled(true);
+
+    //更改标题
+    this->setWindowTitle(QString("Qtelnet | %1 | 本机[%2:%3]")
+                             .arg(NetworkHandler::mode2String(static_cast<int>(m_mode)))
+                             .arg(m_handler->localAddress())
+                             .arg(m_handler->localPort()));
 }
 //关闭连接
 void MainWindow::on_closeConnectButton_clicked()
@@ -87,5 +138,29 @@ void MainWindow::on_closeConnectButton_clicked()
     ui->startConnectButton->setText("开始连接");
     ui->startConnectButton->setEnabled(true);
     ui->closeConnectButton->setEnabled(false);
+    ui->clientSendMessageButton->setEnabled(false);
     qInfo() << "Connection closed.";
+    //恢复标题
+    this->setWindowTitle("Qtelnet");
+}
+//TCP客户端/UDP 模式点击发送消息按钮
+void MainWindow::on_clientSendMessageButton_clicked()
+{
+    //获取需要发送的数据
+    auto text = ui->clientMessageTextEdit->toPlainText();
+    auto data = text.toUtf8();
+    //一次性全部发送
+    if (m_handler->writeAll(data)) {
+        ui->statusbar->showMessage("发送成功");
+        //记录，首先转化两次
+        auto ASCIIString = ByteArrayUtils::toAsciiString(data);
+        auto HEXString = ByteArrayUtils::toHexString(data, true, true);
+        MessageBuilderUtils mb("本地", m_handler->localAddress(), m_handler->localPort());
+        //写入
+        ui->clientUTFTextBrowser->append(mb.toHTMLText(text, "blue"));
+        ui->clientASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "blue"));
+        ui->clientHEXTextBrowser->append(mb.toHTMLText(HEXString, "blue"));
+    } else {
+        ui->statusbar->showMessage("发送失败！");
+    }
 }

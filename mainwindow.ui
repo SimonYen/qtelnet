@@ -527,7 +527,7 @@
                      </property>
                      <layout class="QVBoxLayout" name="verticalLayout_10">
                       <item>
-                       <widget class="QCheckBox" name="checkBox_9">
+                       <widget class="QCheckBox" name="clientHexCheckBox">
                         <property name="text">
                          <string>HEX进制发送</string>
                         </property>

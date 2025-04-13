@@ -14,12 +14,15 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , m_mode(NetworkHandler::Mode::TCP_CLIENT)
     , m_handler(nullptr)
+    , m_backspace_counter(0)
 {
     ui->setupUi(this);
     //设置输入限制
     settingInputValidation();
     //禁止使用系统代理
     QNetworkProxyFactory::setUseSystemConfiguration(false);
+    //安装事件过滤器
+    qApp->installEventFilter(this);
     qInfo() << "Main Window constructed.";
 }
 
@@ -29,6 +32,21 @@ MainWindow::~MainWindow()
     if (m_handler)
         delete m_handler;
     delete ui;
+}
+
+//捕获键盘按下退格按钮
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->clientMessageTextEdit && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->key() == Qt::Key_Backspace) {
+            //同时还是HEX模式
+            if (ui->clientHexCheckBox->checkState() == Qt::Checked) {
+                m_backspace_counter++;
+            }
+        }
+    }
+    return QObject::eventFilter(watched, event);
 }
 //当套接字类型选择框有所改变的时候
 void MainWindow::on_socketTypeCombox_currentIndexChanged(int index)
@@ -231,4 +249,83 @@ void MainWindow::on_clientSaveMessageButton_clicked()
     qInfo() << "Messsages saved. File location: " << file_name;
     file.close();
     ui->statusbar->showMessage("消息记录保存成功，保存在：" + file_name);
+}
+
+//客户端HEX状态改变
+void MainWindow::on_clientHexCheckBox_checkStateChanged(const Qt::CheckState &arg1)
+{
+    //如果处于HEX编辑模式
+    if (arg1 == Qt::Checked) {
+        //原有UTF8字符串转化为HEX进制字符串
+        auto UTF8Text = ui->clientMessageTextEdit->toPlainText();
+        //覆盖
+        ui->clientMessageTextEdit->setPlainText(
+            ByteArrayUtils::toHexString(UTF8Text.toUtf8(), true, true));
+    } else {
+        //HEX转为UTF8
+        auto HexText = ui->clientMessageTextEdit->toPlainText();
+        QByteArray hex = QByteArray::fromHex(HexText.remove(' ').toUtf8()); // 去掉空格再转
+        //覆盖
+        ui->clientMessageTextEdit->setPlainText(QString::fromUtf8(hex));
+    }
+    // 光标移到文本末尾
+    QTextCursor cursor = ui->clientMessageTextEdit->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ui->clientMessageTextEdit->setTextCursor(cursor);
+}
+
+void MainWindow::on_clientMessageTextEdit_textChanged()
+{
+    // 避免递归触发
+    static bool inProcess = false;
+    if (inProcess)
+        return;
+
+    //如果不是HEX模式，不管
+    if (ui->clientHexCheckBox->checkState() != Qt::Checked) {
+        return;
+    }
+
+    inProcess = true;
+
+    //取出原始字符
+    auto rawText = ui->clientMessageTextEdit->toPlainText();
+    //如果是按下退格键
+    if (m_backspace_counter) {
+        rawText.chop(m_backspace_counter);
+        m_backspace_counter = 0;
+        ui->clientHEXTextBrowser->setPlainText(rawText);
+        // 重置状态
+        inProcess = false;
+        // 光标移到文本末尾
+        QTextCursor cursor = ui->clientMessageTextEdit->textCursor();
+        cursor.movePosition(QTextCursor::End);
+        ui->clientMessageTextEdit->setTextCursor(cursor);
+        return;
+    }
+    // 只保留十六进制字符
+    rawText.remove(QRegularExpression("[^0-9A-Fa-f]"));
+    //最终结果
+    QString text = "";
+    //每两位插一个空格
+    int counter = 0;
+    for (const auto ch : rawText) {
+        text.append(ch);
+        counter++;
+        if (counter == 2) {
+            //插入空格并重新置零
+            text.append(' ');
+            counter = 0;
+        }
+    }
+    //直接自动转大写
+    ui->clientMessageTextEdit->setPlainText(text.toUpper());
+
+    // 重置状态
+    inProcess = false;
+
+    // 光标移到文本末尾
+    QTextCursor cursor = ui->clientMessageTextEdit->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    ui->clientMessageTextEdit->setTextCursor(cursor);
 }

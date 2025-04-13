@@ -18,6 +18,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
 private slots:
     void on_socketTypeCombox_currentIndexChanged(int index);
 
@@ -35,6 +38,8 @@ private:
     QPair<QHostAddress, int> m_address;
     //网络句柄
     NetworkHandler *m_handler;
+    //Hex编辑器模式下按下的退格数
+    int m_backspace_counter;
 
 private:
     //设置输入验证
@@ -51,5 +56,7 @@ private slots:
     void on_clientDisplayButton_clicked();
     void on_clientClearMessageButton_clicked();
     void on_clientSaveMessageButton_clicked();
+    void on_clientHexCheckBox_checkStateChanged(const Qt::CheckState &arg1);
+    void on_clientMessageTextEdit_textChanged();
 };
 #endif // MAINWINDOW_H

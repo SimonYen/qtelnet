@@ -172,16 +172,24 @@ void MainWindow::on_clientSendMessageButton_clicked()
     //获取需要发送的数据
     auto text = ui->clientMessageTextEdit->toPlainText();
     auto data = text.toUtf8();
+    //如果是HEX模式
+    if (ui->clientHexCheckBox->checkState() == Qt::Checked) {
+        //先去掉空格
+        text.remove(' ');
+        //然后直接转成字节
+        data = QByteArray::fromHex(text.toUtf8());
+    }
     //一次性全部发送
     if (m_handler->writeAll(data)) {
         ui->statusbar->showMessage("发送成功");
         if (ui->clientDisplayButton->text() == "暂停显示") {
-            //记录，首先转化两次
+            //记录，首先转化
+            auto UTFString = ByteArrayUtils::toUtf8String(data);
             auto ASCIIString = ByteArrayUtils::toAsciiString(data);
             auto HEXString = ByteArrayUtils::toHexString(data, true, true);
             MessageBuilderUtils mb("本地", m_handler->localAddress(), m_handler->localPort());
             //写入
-            ui->clientUTFTextBrowser->append(mb.toHTMLText(text, "blue"));
+            ui->clientUTFTextBrowser->append(mb.toHTMLText(UTFString, "blue"));
             ui->clientASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "blue"));
             ui->clientHEXTextBrowser->append(mb.toHTMLText(HEXString, "blue"));
             qInfo() << "Sending message to " << m_handler->peerAddress() << ":"

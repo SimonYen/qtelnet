@@ -73,6 +73,7 @@ void MainWindow::connectingNetworkSignalsAndSlots()
     //判断当前模式
     switch (m_mode) {
     case NetworkHandler::Mode::UDP:
+        break;
     case NetworkHandler::Mode::TCP_CLIENT: {
         //连接到客户端的槽
         connect(m_handler, &NetworkHandler::dataReceived, this, &MainWindow::onClientDataReceived);
@@ -102,8 +103,6 @@ void MainWindow::onClientDataReceived(const QByteArray &data)
         ui->clientHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
         ui->clientUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
     }
-
-    //数据包统计
 }
 
 void MainWindow::onSocketErrorOccurred(const QString &error)
@@ -166,7 +165,7 @@ void MainWindow::on_closeConnectButton_clicked()
     //恢复标题
     this->setWindowTitle("Qtelnet");
 }
-//TCP客户端/UDP 模式点击发送消息按钮
+//TCP客户端点击发送消息按钮
 void MainWindow::on_clientSendMessageButton_clicked()
 {
     //获取需要发送的数据

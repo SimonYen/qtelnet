@@ -47,7 +47,7 @@ public:
     /*非虚函数，基类就可以实现的，逻辑通用*/
 
     //关闭连接
-    void close()
+    virtual void close()
     {
         //未初始化，直接跳过
         if (m_socket == nullptr)
@@ -89,9 +89,9 @@ public:
     //查询连接状态
     bool isConnected() const { return (m_socket->state()) == QAbstractSocket::ConnectedState; }
     //获取本地地址
-    QString localAddress() const { return m_socket->localAddress().toString(); }
+    virtual QString localAddress() const { return m_socket->localAddress().toString(); }
     //获取本地端口
-    quint16 localPort() const { return m_socket->localPort(); }
+    virtual quint16 localPort() const { return m_socket->localPort(); }
     //获取对方地址
     QString peerAddress() const { return m_socket->peerAddress().toString(); }
     //获取对方端口

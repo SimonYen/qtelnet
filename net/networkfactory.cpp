@@ -1,4 +1,6 @@
 #include "networkfactory.h"
+#include "tcpclienthandler.h"
+#include "tcpserverhandler.h"
 
 NetworkHandler *NetworkFactory::createHandler(NetworkHandler::Mode mode, QObject *parent)
 {
@@ -7,6 +9,8 @@ NetworkHandler *NetworkFactory::createHandler(NetworkHandler::Mode mode, QObject
     switch (mode) {
     case NetworkHandler::Mode::TCP_CLIENT:
         return new TCPClientHandler(parent);
+    case NetworkHandler::Mode::TCP_SERVER:
+        return new TCPServerHandler(parent);
     default:
         return nullptr;
     }

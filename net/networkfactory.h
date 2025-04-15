@@ -2,7 +2,6 @@
 #define NETWORKFACTORY_H
 
 #include "networkhandler.h"
-#include "tcpclienthandler.h"
 
 class NetworkFactory
 {

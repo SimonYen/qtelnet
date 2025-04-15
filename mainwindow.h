@@ -58,5 +58,7 @@ private slots:
     void on_clientSaveMessageButton_clicked();
     void on_clientHexCheckBox_checkStateChanged(const Qt::CheckState &arg1);
     void on_clientMessageTextEdit_textChanged();
+    //客户端数目发生变化
+    void onClientComboxChanged(QPair<QHostAddress, quint16> address);
 };
 #endif // MAINWINDOW_H

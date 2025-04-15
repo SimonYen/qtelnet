@@ -31,6 +31,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         net/networkfactory.h net/networkfactory.cpp
         filelogger.h filelogger.cpp
         utils.h utils.cpp
+        net/tcpserverhandler.h net/tcpserverhandler.cpp
 
     )
 # Define target properties for Android with Qt 6 as:

@@ -40,12 +40,14 @@ void TCPClientHandler::connectSocketSignals()
 {
     connect(m_socket, &QTcpSocket::connected, this, &NetworkHandler::connected);
     connect(m_socket, &QTcpSocket::disconnected, this, &NetworkHandler::disconnected);
-    connect(m_socket, &QTcpSocket::readyRead, [this]() {
-        emit dataReceived(m_socket->readAll());
-        emit dataReceivedWithFd(m_socket->socketDescriptor(), m_socket->readAll());
+    connect(m_socket, &QTcpSocket::readyRead, this, [this]() {
+        auto data = m_socket->readAll();
+        emit dataReceived(data);
+        emit dataReceivedWithFd(m_socket->socketDescriptor(), data);
     });
     connect(m_socket,
             QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::errorOccurred),
+            this,
             [this](QAbstractSocket::SocketError error) {
                 //顺便也直接日志记录
                 qCritical() << m_socket->errorString();

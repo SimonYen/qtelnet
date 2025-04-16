@@ -7,6 +7,7 @@
 #include <QRegularExpressionValidator>
 #include "./ui_mainwindow.h"
 #include "net/networkfactory.h"
+#include "net/tcpserverhandler.h"
 #include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -29,8 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     qInfo() << "Main Window deconstructed.";
-    if (m_handler)
+    if (m_handler) {
+        m_handler->close();
         delete m_handler;
+    }
     delete ui;
 }
 
@@ -79,9 +82,26 @@ void MainWindow::connectingNetworkSignalsAndSlots()
         connect(m_handler, &NetworkHandler::dataReceived, this, &MainWindow::onClientDataReceived);
         break;
     }
-    //服务器模式日后实现
-    case NetworkHandler::Mode::TCP_SERVER:
+    case NetworkHandler::Mode::TCP_SERVER: {
+        //基类指针转化
+        auto server_handler = static_cast<TCPServerHandler *>(m_handler);
+        //客户端到来
+        connect(server_handler,
+                &TCPServerHandler::clientComing,
+                this,
+                &MainWindow::onClientComboxAdded);
+        //客户端离线
+        connect(server_handler,
+                &TCPServerHandler::clientLeaving,
+                this,
+                &MainWindow::onClientComboxLeft);
+        //消息到来
+        connect(server_handler,
+                &TCPServerHandler::clientMessageSended,
+                this,
+                &MainWindow::onClientMessageReceived);
         break;
+    }
     default:
         break;
     }
@@ -103,6 +123,23 @@ void MainWindow::onClientDataReceived(const QByteArray &data)
         ui->clientHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
         ui->clientUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
     }
+}
+
+void MainWindow::onClientMessageReceived(QPair<QHostAddress, quint16> address,
+                                         const QByteArray &data)
+{
+    //数据转换
+    auto UTFString = ByteArrayUtils::toUtf8String(data);
+    auto ASCIIString = ByteArrayUtils::toAsciiString(data);
+    auto HEXString = ByteArrayUtils::toHexString(data, true, true);
+
+    //显示出来
+    //if (ui->clientDisplayButton->text() == "暂停显示") {
+    MessageBuilderUtils mb("客户端", address.first.toString(), address.second);
+    ui->serverASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "green"));
+    ui->serverHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
+    ui->serverUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
+    //}
 }
 
 void MainWindow::onSocketErrorOccurred(const QString &error)
@@ -145,15 +182,17 @@ void MainWindow::on_startConnectButton_clicked()
 
     //更改标题
     this->setWindowTitle(QString("Qtelnet | %1 | 本机[%2:%3]")
-                             .arg(NetworkHandler::mode2String(static_cast<int>(m_mode)))
-                             .arg(m_handler->localAddress())
-                             .arg(m_handler->localPort()));
+                             .arg(NetworkHandler::mode2String(static_cast<int>(m_mode)),
+                                  m_handler->localAddress(),
+                                  QString::number(m_handler->localPort())));
 }
 //关闭连接
 void MainWindow::on_closeConnectButton_clicked()
 {
     //关闭对象
     m_handler->close();
+    delete m_handler;
+    m_handler = nullptr;
     ui->statusbar->showMessage("连接已关闭");
     m_address = {QHostAddress(), 0};
     //还原按钮属性
@@ -335,4 +374,22 @@ void MainWindow::on_clientMessageTextEdit_textChanged()
     QTextCursor cursor = ui->clientMessageTextEdit->textCursor();
     cursor.movePosition(QTextCursor::End);
     ui->clientMessageTextEdit->setTextCursor(cursor);
+}
+
+void MainWindow::onClientComboxAdded(QPair<QHostAddress, quint16> address)
+{
+    QString host = QString("%1:%2").arg(address.first.toString()).arg(address.second);
+    ui->clientComboBox->addItem(host);
+    ui->statusbar->showMessage(QString("新客户端%1已到来").arg(host));
+}
+
+void MainWindow::onClientComboxLeft(QPair<QHostAddress, quint16> address)
+{
+    //从多选框里找到这一项
+    QString host = QString("%1:%2").arg(address.first.toString()).arg(address.second);
+    int index = ui->clientComboBox->findText(host);
+    if (index != -1) {
+        ui->clientComboBox->removeItem(index);
+        ui->statusbar->showMessage(QString("客户端%1已离线").arg(host));
+    }
 }

@@ -51,6 +51,8 @@ private:
 private slots:
     //客户端消息收到时
     void onClientDataReceived(const QByteArray &data);
+    //服务器收到客户端消息时
+    void onClientMessageReceived(QPair<QHostAddress, quint16> address, const QByteArray &data);
     //发生错误时
     void onSocketErrorOccurred(const QString &error);
     void on_clientDisplayButton_clicked();
@@ -58,7 +60,9 @@ private slots:
     void on_clientSaveMessageButton_clicked();
     void on_clientHexCheckBox_checkStateChanged(const Qt::CheckState &arg1);
     void on_clientMessageTextEdit_textChanged();
-    //客户端数目发生变化
-    void onClientComboxChanged(QPair<QHostAddress, quint16> address);
+    //客户端新增
+    void onClientComboxAdded(QPair<QHostAddress, quint16> address);
+    //客户端离开
+    void onClientComboxLeft(QPair<QHostAddress, quint16> address);
 };
 #endif // MAINWINDOW_H

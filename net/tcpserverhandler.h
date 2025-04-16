@@ -2,6 +2,7 @@
 #define TCPSERVERHANDLER_H
 
 #include <QHash>
+#include <QList>
 #include <QTcpServer>
 #include "networkhandler.h"
 #include "tcpclienthandler.h"
@@ -39,13 +40,16 @@ private:
     QHash<qintptr, TCPClientHandler *> m_fd2client;
     //服务器句柄
     QTcpServer *m_server;
+    QHash<qintptr, QThread *> m_fd2thread;
 
     //自定义信号
 signals:
     //客户端消息发来
     void clientMessageSended(QPair<QHostAddress, quint16> address, const QByteArray &data);
-    //通知主线程更新界面，客户端发生变化了
-    void updateUI(QPair<QHostAddress, quint16> address);
+    //客户端到来
+    void clientComing(QPair<QHostAddress, quint16> address);
+    //客户端离开
+    void clientLeaving(QPair<QHostAddress, quint16> address);
 };
 
 #endif // TCPSERVERHANDLER_H

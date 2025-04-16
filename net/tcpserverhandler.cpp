@@ -26,10 +26,23 @@ TCPServerHandler::TCPServerHandler(QObject *parent)
 
 TCPServerHandler::~TCPServerHandler()
 {
+    close();
+    //关掉正在运行的线程
+    for (auto &fd : m_fd2client.keys()) {
+        qInfo() << "Fd: " << fd << "close connection, stop thread...";
+        //先关闭远程连接
+        m_fd2client[fd]->close();
+        m_fd2client[fd]->deleteLater();
+        //再关闭线程
+        m_fd2thread[fd]->quit();
+        m_fd2thread[fd]->wait();
+        m_fd2thread[fd]->deleteLater();
+    }
     //清理资源
     m_fd2client.clear();
-    if (m_server)
-        delete m_server;
+    m_fd2address.clear();
+    m_fd2thread.clear();
+    m_address2fd.clear();
     //Windows下还需要额外处理
 #ifdef Q_OS_WIN
     WSACleanup();
@@ -139,7 +152,10 @@ quint16 TCPServerHandler::localPort() const
 void TCPServerHandler::close()
 {
     if (m_server) {
+        qInfo() << "Staring to close self...";
         m_server->close();
+        delete m_server;
+        m_server = nullptr;
     }
 }
 
@@ -163,22 +179,25 @@ void TCPServerHandler::incomingConnection(QTcpSocket *client)
     auto cli = new TCPClientHandler(this, client);
     //创建一个线程
     auto thread = new QThread(this);
+    //这里还需要解除parent关系
+    cli->setParent(nullptr);
     //移动到线程里
-    client->moveToThread(thread);
+    cli->moveToThread(thread);
     //获取地址
     QPair<QHostAddress, quint16> clientAddress = {QHostAddress(cli->localAddress()),
                                                   cli->localPort()};
     //获取套接字描述符
     auto fd = client->socketDescriptor();
     //线程开始运行时，先更新UI
-    connect(thread, &QThread::started, [&]() {
-        emit updateUI(clientAddress);
+    connect(thread, &QThread::started, this, [clientAddress, fd, this]() {
+        emit clientComing(clientAddress);
         qInfo() << clientAddress << " is comming, Fd: " << fd;
     });
     //当客户端传来数据时
     connect(cli,
             &TCPClientHandler::dataReceivedWithFd,
-            [&](qintptr socketfd, const QByteArray &data) {
+            this,
+            [this](qintptr socketfd, const QByteArray &data) {
                 //获取地址
                 auto addr = m_fd2address[socketfd];
                 //转发给UI
@@ -186,23 +205,29 @@ void TCPServerHandler::incomingConnection(QTcpSocket *client)
                 qInfo() << addr << " says: " << ByteArrayUtils::toUtf8String(data);
             });
     //当客户端断开连接时，首先让线程退出
-    connect(cli, &NetworkHandler::disconnected, thread, &QThread::quit);
+    connect(cli, &NetworkHandler::disconnected, this, [thread]() {
+        thread->quit();
+        //必须等待
+        thread->wait();
+    });
     //线程退出时，清理资源
-    connect(thread, &QThread::finished, [&]() {
+    connect(thread, &QThread::finished, this, [thread, cli, fd, this]() {
         thread->deleteLater();
         cli->deleteLater();
         //获取地址
         auto addr = m_fd2address[fd];
         //UI变化
-        emit updateUI(addr);
-        qInfo() << addr << " disconnected.";
+        emit clientLeaving(addr);
+        qInfo() << addr << " disconnected positively.";
         m_address2fd.remove(addr);
         m_fd2address.remove(fd);
         m_fd2client.remove(fd);
+        m_fd2thread.remove(fd);
     });
     //启动线程
     thread->start();
     m_address2fd[clientAddress] = fd;
     m_fd2address[fd] = clientAddress;
     m_fd2client[fd] = cli;
+    m_fd2thread[fd] = thread;
 }

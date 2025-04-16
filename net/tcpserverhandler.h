@@ -19,11 +19,13 @@ public:
     bool sendToClientByFd(qintptr fd, const QByteArray &data);
     //根据地址，给某个客户端发送数据
     bool sendToClientByAddress(QPair<QHostAddress, quint16> addr, const QByteArray &data);
+    bool sendToAllClient(const QByteArray &data);
     bool init(QPair<QHostAddress, quint16> address) override;
     Mode mode() const override;
     QString localAddress() const override;
     quint16 localPort() const override;
     void close() override;
+    void shutdown();
 
 private:
     //跨平台关闭套接字

@@ -49,11 +49,8 @@ public:
     //关闭连接
     virtual void close()
     {
-        //未初始化，直接跳过
-        if (m_socket == nullptr)
-            return;
         //如果不是处于断开状态
-        if ((m_socket->state()) != QAbstractSocket::UnconnectedState) {
+        if (m_socket && ((m_socket->state()) != QAbstractSocket::UnconnectedState)) {
             qInfo() << m_address << " disconnected.";
             //断开
             m_socket->disconnectFromHost();

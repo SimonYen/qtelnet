@@ -64,5 +64,6 @@ private slots:
     void onClientComboxAdded(QPair<QHostAddress, quint16> address);
     //客户端离开
     void onClientComboxLeft(QPair<QHostAddress, quint16> address);
+    void on_serverReplyButton_clicked();
 };
 #endif // MAINWINDOW_H

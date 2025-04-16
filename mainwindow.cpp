@@ -30,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     qInfo() << "Main Window deconstructed.";
+    if (m_mode == NetworkHandler::Mode::TCP_SERVER) {
+        auto handler = static_cast<TCPServerHandler *>(m_handler);
+        handler->shutdown();
+    }
     if (m_handler) {
         m_handler->close();
         delete m_handler;
@@ -189,6 +193,10 @@ void MainWindow::on_startConnectButton_clicked()
 //关闭连接
 void MainWindow::on_closeConnectButton_clicked()
 {
+    if (m_mode == NetworkHandler::Mode::TCP_SERVER) {
+        auto handler = static_cast<TCPServerHandler *>(m_handler);
+        handler->shutdown();
+    }
     //关闭对象
     m_handler->close();
     delete m_handler;
@@ -392,4 +400,37 @@ void MainWindow::onClientComboxLeft(QPair<QHostAddress, quint16> address)
         ui->clientComboBox->removeItem(index);
         ui->statusbar->showMessage(QString("客户端%1已离线").arg(host));
     }
+}
+//TCP服务器点击回复消息按钮
+void MainWindow::on_serverReplyButton_clicked()
+{
+    auto handler = static_cast<TCPServerHandler *>(m_handler);
+    //获取需要回复的内容
+    auto message = ui->serverMessageTextEdit->toPlainText();
+    //判断是否广播
+    if (ui->clientComboBox->currentIndex() == 0) {
+        //广播，群发
+        handler->sendToAllClient(message.toUtf8());
+        ui->statusbar->showMessage("已将消息发送给所有客户端");
+    } else {
+        //单发的话，获取地址
+        auto host = ui->clientComboBox->currentText();
+        //构造
+        QPair<QHostAddress, quint16> addr = {QHostAddress(host.split(":")[0]),
+                                             host.split(":")[1].toInt()};
+        handler->sendToClientByAddress(addr, message.toUtf8());
+        ui->statusbar->showMessage("单独发送消息给" + host);
+    }
+
+    auto data = message.toUtf8();
+    //记录，首先转化
+    auto UTFString = ByteArrayUtils::toUtf8String(data);
+    auto ASCIIString = ByteArrayUtils::toAsciiString(data);
+    auto HEXString = ByteArrayUtils::toHexString(data, true, true);
+    MessageBuilderUtils mb("服务器", m_handler->localAddress(), m_handler->localPort());
+    //写入
+    ui->serverUTFTextBrowser->append(mb.toHTMLText(UTFString, "blue"));
+    ui->serverASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "blue"));
+    ui->serverHEXTextBrowser->append(mb.toHTMLText(HEXString, "blue"));
+    qInfo() << "Replying message: " << message;
 }

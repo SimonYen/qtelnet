@@ -22,27 +22,15 @@ TCPServerHandler::TCPServerHandler(QObject *parent)
     : NetworkHandler{parent}
 {
     m_server = new QTcpServer(parent);
+    m_socket = nullptr;
 }
 
 TCPServerHandler::~TCPServerHandler()
 {
-    close();
-    //关掉正在运行的线程
-    for (auto &fd : m_fd2client.keys()) {
-        qInfo() << "Fd: " << fd << "close connection, stop thread...";
-        //先关闭远程连接
-        m_fd2client[fd]->close();
-        m_fd2client[fd]->deleteLater();
-        //再关闭线程
-        m_fd2thread[fd]->quit();
-        m_fd2thread[fd]->wait();
-        m_fd2thread[fd]->deleteLater();
+    if (m_server) {
+        delete m_server;
+        m_server = nullptr;
     }
-    //清理资源
-    m_fd2client.clear();
-    m_fd2address.clear();
-    m_fd2thread.clear();
-    m_address2fd.clear();
     //Windows下还需要额外处理
 #ifdef Q_OS_WIN
     WSACleanup();
@@ -118,6 +106,18 @@ bool TCPServerHandler::sendToClientByAddress(QPair<QHostAddress, quint16> addr,
     return sendToClientByFd(m_address2fd[addr], data);
 }
 
+bool TCPServerHandler::sendToAllClient(const QByteArray &data)
+{
+    bool result = true;
+    //遍历所有客户端
+    for (auto &fd : m_fd2client.keys()) {
+        if (!sendToClientByFd(fd, data)) {
+            result = false;
+        }
+    }
+    return result;
+}
+
 bool TCPServerHandler::init(QPair<QHostAddress, quint16> address)
 {
     //连接信号和槽
@@ -159,6 +159,38 @@ void TCPServerHandler::close()
     }
 }
 
+void TCPServerHandler::shutdown()
+{
+    for (auto &fd : m_fd2client.keys()) {
+        qInfo() << "Fd: " << fd << " - closing connection and stopping thread...";
+
+        auto client = m_fd2client[fd];
+        auto thread = m_fd2thread[fd];
+
+        if (client) {
+            // 使用 deleteLater + disconnect
+            client->disconnect(); // 防止发出信号
+            client->close();
+            client->deleteLater();
+        }
+
+        if (thread) {
+            thread->quit();
+            if (!thread->wait(3000)) {
+                qWarning() << "Thread did not quit in time. Forcing termination.";
+                thread->terminate(); // 或者强制终止，但要注意安全性
+                thread->wait();
+            }
+            thread->deleteLater();
+        }
+    }
+
+    m_fd2client.clear();
+    m_fd2address.clear();
+    m_fd2thread.clear();
+    m_address2fd.clear();
+}
+
 NetworkHandler::Mode TCPServerHandler::mode() const
 {
     return NetworkHandler::Mode::TCP_SERVER;
@@ -184,8 +216,7 @@ void TCPServerHandler::incomingConnection(QTcpSocket *client)
     //移动到线程里
     cli->moveToThread(thread);
     //获取地址
-    QPair<QHostAddress, quint16> clientAddress = {QHostAddress(cli->localAddress()),
-                                                  cli->localPort()};
+    QPair<QHostAddress, quint16> clientAddress = {QHostAddress(cli->peerAddress()), cli->peerPort()};
     //获取套接字描述符
     auto fd = client->socketDescriptor();
     //线程开始运行时，先更新UI

@@ -144,6 +144,60 @@ void MainWindow::onClientMessageReceived(QPair<QHostAddress, quint16> address,
         ui->serverHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
         ui->serverUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
     }
+    ui->statusbar->showMessage(
+        QString("收到客户端%1:%2发来的消息：%3")
+            .arg(address.first.toString(), QString::number(address.second), UTFString));
+    qInfo() << "Client" << address << " says: " << UTFString;
+
+    auto handler = static_cast<TCPServerHandler *>(m_handler);
+    //如果开启了自动回复
+    if (ui->AutoCheckBox->isChecked()) {
+        //获取发送框的消息
+        auto text = ui->serverMessageTextEdit->toPlainText();
+        //发送
+        handler->sendToClientByAddress(address, text.toUtf8());
+        //显示出来
+        if (ui->serverDisplayButton->text() == "暂停显示") {
+            MessageBuilderUtils mb("自动回复", handler->localAddress(), handler->localPort());
+            ui->serverASCIITextBrowser->append(
+                mb.toHTMLText(ByteArrayUtils::toAsciiString(text.toUtf8()), "pink"));
+            ui->serverHEXTextBrowser->append(
+                mb.toHTMLText(ByteArrayUtils::toHexString(text.toUtf8()), "pink"));
+            ui->serverUTFTextBrowser->append(mb.toHTMLText(text, "pink"));
+        }
+    }
+    //如果开启了Echo
+    if (ui->EchoCheckBox->isChecked()) {
+        //获取客户端发送的消息
+        auto text = UTFString;
+        //发送
+        handler->sendToClientByAddress(address, text.toUtf8());
+        //显示出来
+        if (ui->serverDisplayButton->text() == "暂停显示") {
+            MessageBuilderUtils mb("Echo", handler->localAddress(), handler->localPort());
+            ui->serverASCIITextBrowser->append(
+                mb.toHTMLText(ByteArrayUtils::toAsciiString(text.toUtf8()), "pink"));
+            ui->serverHEXTextBrowser->append(
+                mb.toHTMLText(ByteArrayUtils::toHexString(text.toUtf8()), "pink"));
+            ui->serverUTFTextBrowser->append(mb.toHTMLText(text, "pink"));
+        }
+    }
+    //如果开启了NTP
+    if (ui->NTPCheckBox->isChecked()) {
+        //获取当前时间
+        auto text = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
+        //发送
+        handler->sendToClientByAddress(address, text.toUtf8());
+        //显示出来
+        if (ui->serverDisplayButton->text() == "暂停显示") {
+            MessageBuilderUtils mb("NTP", handler->localAddress(), handler->localPort());
+            ui->serverASCIITextBrowser->append(
+                mb.toHTMLText(ByteArrayUtils::toAsciiString(text.toUtf8()), "pink"));
+            ui->serverHEXTextBrowser->append(
+                mb.toHTMLText(ByteArrayUtils::toHexString(text.toUtf8()), "pink"));
+            ui->serverUTFTextBrowser->append(mb.toHTMLText(text, "pink"));
+        }
+    }
 }
 
 void MainWindow::onSocketErrorOccurred(const QString &error)
@@ -455,4 +509,51 @@ void MainWindow::on_serverDisplayButton_clicked()
         ui->serverDisplayButton->setText("暂停显示");
         ui->statusbar->showMessage("恢复消息记录显示");
     }
+}
+
+void MainWindow::on_serverMessageSaveButton_clicked()
+{
+    // 弹出文件夹选择对话框
+    QString folderPath = QFileDialog::getExistingDirectory(this, "想将消息保存在何处？");
+    if (folderPath.isEmpty()) {
+        ui->statusbar->showMessage("未选择保存目录");
+        return;
+    }
+    //获取当前Tab
+    int current_index = ui->serverTabWidget->currentIndex();
+    QTextBrowser *current_browser = nullptr;
+    //说实话，这里写法很粗糙
+    QHash<int, QTextBrowser *> index2browser = {
+        {0, ui->serverUTFTextBrowser},
+        {1, ui->serverASCIITextBrowser},
+        {2, ui->serverHEXTextBrowser},
+    };
+    current_browser = index2browser[current_index];
+    if (current_browser == nullptr) {
+        qWarning() << "The pointer of browser is NULL!!! " << "index: " << current_index;
+        return;
+    }
+    //构建生成文件名
+    QDir dir(folderPath);
+    auto file_name = dir.absoluteFilePath(ui->serverTabWidget->tabText(current_index) + ".txt");
+    QFile file(file_name);
+    //尝试打开文件
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qWarning() << "Creating file failed, filename: " << file_name;
+        return;
+    }
+    QTextStream stream(&file);
+    stream.setEncoding(QStringConverter::Utf8);
+    stream << current_browser->toPlainText();
+    qInfo() << "Messsages saved. File location: " << file_name;
+    file.close();
+    ui->statusbar->showMessage("消息记录保存成功，保存在：" + file_name);
+}
+
+void MainWindow::on_serverMessageClearButton_clicked()
+{
+    ui->serverASCIITextBrowser->clear();
+    ui->serverHEXTextBrowser->clear();
+    ui->serverUTFTextBrowser->clear();
+    ui->statusbar->showMessage("消息清空成功");
 }

@@ -35,18 +35,13 @@ MessageBuilderUtils::MessageBuilderUtils(const QString &role, const QString &hos
     m_buildTime = QDateTime::currentDateTime().toString("hh:mm:ss");
 }
 
-QString MessageBuilderUtils::toPlainText(const QString &msg)
-{
-    return QString("[%1](%2,%3:%4):%5").arg(m_buildTime).arg(m_role).arg(m_host).arg(m_port).arg(msg);
-}
 
 QString MessageBuilderUtils::toHTMLText(const QString &msg, const QString &color)
 {
-    return QString("<p>[%1](%2,%3:%4):<span style='color:%5'>%6</span></p>")
-        .arg(m_buildTime)
-        .arg(m_role)
-        .arg(m_host)
-        .arg(m_port)
-        .arg(color)
-        .arg(msg.toHtmlEscaped());
+    //先构造内部的字符串 前缀+时间+地址
+    auto innerText = QString("<i>&lt;%1&gt;</i>[%2]<b>(%3:%4):</b>")
+                         .arg(m_role, m_buildTime, m_host, QString::number(m_port));
+    //再返回一个边框文本行
+    return QString("<p>%2<span style='color:%1;font-weight:bold;'>%3</span></p>")
+        .arg(color, innerText, msg.toHtmlEscaped());
 }

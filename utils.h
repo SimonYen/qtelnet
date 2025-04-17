@@ -32,8 +32,6 @@ private:
 
 public:
     MessageBuilderUtils(const QString &role, const QString &host, quint16 port);
-    //获取朴素字符串
-    QString toPlainText(const QString &msg);
     //获取HTML格式字符串
     QString toHTMLText(const QString &msg, const QString &color);
 };

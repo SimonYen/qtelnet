@@ -138,12 +138,12 @@ void MainWindow::onClientMessageReceived(QPair<QHostAddress, quint16> address,
     auto HEXString = ByteArrayUtils::toHexString(data, true, true);
 
     //显示出来
-    //if (ui->clientDisplayButton->text() == "暂停显示") {
-    MessageBuilderUtils mb("客户端", address.first.toString(), address.second);
-    ui->serverASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "green"));
-    ui->serverHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
-    ui->serverUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
-    //}
+    if (ui->serverDisplayButton->text() == "暂停显示") {
+        MessageBuilderUtils mb("客户端", address.first.toString(), address.second);
+        ui->serverASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "green"));
+        ui->serverHEXTextBrowser->append(mb.toHTMLText(HEXString, "green"));
+        ui->serverUTFTextBrowser->append(mb.toHTMLText(UTFString, "green"));
+    }
 }
 
 void MainWindow::onSocketErrorOccurred(const QString &error)
@@ -407,11 +407,21 @@ void MainWindow::on_serverReplyButton_clicked()
     auto handler = static_cast<TCPServerHandler *>(m_handler);
     //获取需要回复的内容
     auto message = ui->serverMessageTextEdit->toPlainText();
+    auto data = message.toUtf8();
+    //记录，首先转化
+    auto UTFString = ByteArrayUtils::toUtf8String(data);
+    auto ASCIIString = ByteArrayUtils::toAsciiString(data);
+    auto HEXString = ByteArrayUtils::toHexString(data, true, true);
+    MessageBuilderUtils *mb = nullptr;
     //判断是否广播
     if (ui->clientComboBox->currentIndex() == 0) {
         //广播，群发
         handler->sendToAllClient(message.toUtf8());
         ui->statusbar->showMessage("已将消息发送给所有客户端");
+        //构造消息记录
+        mb = new MessageBuilderUtils("服务器=>全体",
+                                     m_handler->localAddress(),
+                                     m_handler->localPort());
     } else {
         //单发的话，获取地址
         auto host = ui->clientComboBox->currentText();
@@ -420,17 +430,29 @@ void MainWindow::on_serverReplyButton_clicked()
                                              host.split(":")[1].toInt()};
         handler->sendToClientByAddress(addr, message.toUtf8());
         ui->statusbar->showMessage("单独发送消息给" + host);
+        //构造消息记录
+        mb = new MessageBuilderUtils("服务器=>" + host,
+                                     m_handler->localAddress(),
+                                     m_handler->localPort());
     }
 
-    auto data = message.toUtf8();
-    //记录，首先转化
-    auto UTFString = ByteArrayUtils::toUtf8String(data);
-    auto ASCIIString = ByteArrayUtils::toAsciiString(data);
-    auto HEXString = ByteArrayUtils::toHexString(data, true, true);
-    MessageBuilderUtils mb("服务器", m_handler->localAddress(), m_handler->localPort());
     //写入
-    ui->serverUTFTextBrowser->append(mb.toHTMLText(UTFString, "blue"));
-    ui->serverASCIITextBrowser->append(mb.toHTMLText(ASCIIString, "blue"));
-    ui->serverHEXTextBrowser->append(mb.toHTMLText(HEXString, "blue"));
+    if (ui->serverDisplayButton->text() == "暂停显示") {
+        ui->serverUTFTextBrowser->append(mb->toHTMLText(UTFString, "blue"));
+        ui->serverASCIITextBrowser->append(mb->toHTMLText(ASCIIString, "blue"));
+        ui->serverHEXTextBrowser->append(mb->toHTMLText(HEXString, "blue"));
+    }
     qInfo() << "Replying message: " << message;
+    delete mb;
+}
+
+void MainWindow::on_serverDisplayButton_clicked()
+{
+    if (ui->serverDisplayButton->text() == "暂停显示") {
+        ui->serverDisplayButton->setText("继续显示");
+        ui->statusbar->showMessage("停止显示消息记录");
+    } else {
+        ui->serverDisplayButton->setText("暂停显示");
+        ui->statusbar->showMessage("恢复消息记录显示");
+    }
 }

@@ -24,6 +24,9 @@ MainWindow::MainWindow(QWidget *parent)
     QNetworkProxyFactory::setUseSystemConfiguration(false);
     //安装事件过滤器
     qApp->installEventFilter(this);
+    m_timer = new QTimer(parent);
+    //绑定发送槽
+    connect(m_timer, &QTimer::timeout, this, &MainWindow::on_clientSendMessageButton_clicked);
     qInfo() << "Main Window constructed.";
 }
 
@@ -73,6 +76,10 @@ void MainWindow::settingInputValidation()
     // 创建端口验证器
     QRegularExpressionValidator *portValidator = new QRegularExpressionValidator(portRegExp, this);
     ui->portLineEdit->setValidator(portValidator);
+
+    //设定定时器验证器
+    QIntValidator *timerValidator = new QIntValidator(1, 9999999, this);
+    ui->IntervalLineEdit->setValidator(timerValidator);
 }
 
 void MainWindow::connectingNetworkSignalsAndSlots()
@@ -556,4 +563,22 @@ void MainWindow::on_serverMessageClearButton_clicked()
     ui->serverHEXTextBrowser->clear();
     ui->serverUTFTextBrowser->clear();
     ui->statusbar->showMessage("消息清空成功");
+}
+
+void MainWindow::on_clientIntervalSendCheckBox_checkStateChanged(const Qt::CheckState &arg1)
+{
+    //如果处于勾选状态
+    if (arg1 == Qt::Checked) {
+        //获取时间间隔
+        auto interval = ui->IntervalLineEdit->text();
+        //启动定时器
+        m_timer->start(interval.toInt());
+        ui->statusbar->showMessage(QString("定时器已启动，时间间隔：%1 ms").arg(interval));
+        qInfo() << "Timer started, interval: " << interval << " ms";
+    } else {
+        //关闭定时器
+        m_timer->stop();
+        ui->statusbar->showMessage("定时器已关闭");
+        qInfo() << "Timer stopped";
+    }
 }

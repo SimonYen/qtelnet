@@ -4,6 +4,7 @@
 #include <QHostAddress>
 #include <QMainWindow>
 #include <QPair>
+#include <QTimer>
 #include "net/networkhandler.h"
 
 QT_BEGIN_NAMESPACE
@@ -40,6 +41,8 @@ private:
     NetworkHandler *m_handler;
     //Hex编辑器模式下按下的退格数
     int m_backspace_counter;
+    //定时器
+    QTimer *m_timer;
 
 private:
     //设置输入验证
@@ -68,5 +71,6 @@ private slots:
     void on_serverDisplayButton_clicked();
     void on_serverMessageSaveButton_clicked();
     void on_serverMessageClearButton_clicked();
+    void on_clientIntervalSendCheckBox_checkStateChanged(const Qt::CheckState &arg1);
 };
 #endif // MAINWINDOW_H

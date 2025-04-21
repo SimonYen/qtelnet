@@ -1,6 +1,5 @@
 #ifndef TCPSERVERHANDLER_H
 #define TCPSERVERHANDLER_H
-
 #include <QHash>
 #include <QList>
 #include <QTcpServer>

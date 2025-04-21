@@ -10,7 +10,6 @@
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <arpa/inet.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -201,7 +200,7 @@ void TCPServerHandler::common_close_fd(int sockfd)
 #ifdef Q_OS_WIN
     closesocket(sockfd);
 #else
-    close(sockfd);
+    ::close(sockfd);
 #endif
 }
 

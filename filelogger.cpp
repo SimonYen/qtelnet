@@ -7,7 +7,7 @@ FileLogger::FileLogger()
     //附加模式打开文件
     m_logFile.setFileName("log.txt");
     if (!m_logFile.open(QIODevice::Append | QIODevice::Text)) {
-        qFatal() << "Failed to open log file !";
+        qDebug() << "Failed to open log file !";
     }
     m_stream.setDevice(&m_logFile);
 }

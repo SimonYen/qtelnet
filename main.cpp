@@ -2,7 +2,11 @@
 #include "mainwindow.h"
 
 #include <QApplication>
+#ifdef Q_OS_WIN
 #include <QtLogging>
+#else
+#include <qlogging.h>
+#endif
 
 //定义全局文件日志对象
 FileLogger *logger = nullptr;
